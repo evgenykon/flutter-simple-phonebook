@@ -1,8 +1,6 @@
 import 'package:hive/hive.dart';
 
-enum PhDirectContactType {
-  phone, email
-}
+import '../enums/ph_enum_direct_contact_type.dart';
 
 @HiveType(typeId: 2)
 class PhDirectContact {
@@ -10,5 +8,5 @@ class PhDirectContact {
   final String value;
   final String label;
 
-  PhDirectContact(this.type, this.value, this.label);
+  PhDirectContact({required this.type, required this.value, required this.label});
 }

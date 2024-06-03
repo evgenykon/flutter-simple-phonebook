@@ -1,11 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
-import 'package:flutter_contacts/contact.dart';
-import 'package:flutter_contacts/flutter_contacts.dart';
-import 'package:loggy/loggy.dart';
 import 'package:phonebook/components/contact_image.dart';
-import 'package:phonebook/entities/pb_contact.dart';
+import 'package:phonebook/entities/ph_contact.dart';
 
 
 class ContactItem extends StatelessWidget {

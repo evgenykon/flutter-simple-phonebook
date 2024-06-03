@@ -1,0 +1,3 @@
+enum PhDirectContactType {
+  phone, email
+}

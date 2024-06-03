@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_contacts/contact.dart';
-import 'package:phonebook/entities/pb_contact.dart';
+import 'package:phonebook/entities/ph_contact.dart';
+
+import '../entities/ph_direct_contact.dart';
+import '../enums/ph_enum_direct_contact_type.dart';
 
 class DetailedContactRow extends StatelessWidget {
 
@@ -37,7 +39,7 @@ class DetailedContactRow extends StatelessWidget {
             )
         ),
         Expanded(
-            flex: 7,
+            flex: 6,
             child: TextButton(
               style: const ButtonStyle(
                 alignment: Alignment.centerLeft
@@ -50,12 +52,15 @@ class DetailedContactRow extends StatelessWidget {
               ),
             ),
         ),
-        TextButton(
-          onPressed: () {  },
-          style: const ButtonStyle(
-              alignment: Alignment.centerRight
+        Expanded(
+          flex: 1,
+          child: TextButton(
+            onPressed: () {  },
+            style: const ButtonStyle(
+                alignment: Alignment.center
+            ),
+            child: const Icon(Icons.edit, size: 16,),
           ),
-          child: const Icon(Icons.edit, size: 16,),
         ),
       ],
     );

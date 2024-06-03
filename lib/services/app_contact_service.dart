@@ -1,10 +1,10 @@
-
-import 'dart:typed_data';
-
 import 'package:flutter_contacts/contact.dart';
 import 'package:hive/hive.dart';
 import 'package:loggy/loggy.dart';
-import 'package:phonebook/entities/pb_contact.dart';
+import 'package:phonebook/entities/ph_contact.dart';
+
+import '../entities/ph_direct_contact.dart';
+import '../enums/ph_enum_direct_contact_type.dart';
 
 class AppContactService {
 
@@ -12,31 +12,38 @@ class AppContactService {
 
     Map<String, PhContact> mergedList = {};
 
-    var contacts = await Hive.openBox('ph_contacts');
-    List<String> mapIndex = await contacts.get('index', defaultValue: <String>[]);
+    var contactsBox = await Hive.openBox('ph_contacts');
+    List<String> mapIndex = await contactsBox.get('index', defaultValue: <String>[]);
+    logDebug(mapIndex);
 
-    for (var index in mapIndex) {
-      var fetchedContact = await contacts.get('id:$index', defaultValue: null);
+    List<String> updatedMapIndex = <String>[];
+    for (var idIndex in mapIndex) {
+      var fetchedContact = await contactsBox.get('$idIndex', defaultValue: null);
       if (fetchedContact == null) {
-        throw Exception('null value for contact $index');
+        logDebug('skip lost contact $idIndex');
+        continue;
       }
-      mergedList['id:$index'] = fetchedContact;
+      updatedMapIndex.add(idIndex);
+      mergedList['$idIndex'] = fetchedContact;
+      logDebug('load contact $idIndex');
     }
 
     List<String> phoneIndex = [];
     for (var contact in phoneContacts) {
+      String phoneContactId = contact.id;
+      phoneIndex.add('id:$phoneContactId');
 
-      String contactId = contact.id;
-      phoneIndex.add(contactId);
-
-      if (!mergedList.containsKey('id:$contactId')) {
-
+      if (!mergedList.containsKey('id:$phoneContactId')) {
         List<PhDirectContact> directContacts = [];
         for (var item in contact.phones) {
-          directContacts.add(PhDirectContact(PhDirectContactType.phone, item.number, item.label.name));
+          directContacts.add(PhDirectContact(type: PhDirectContactType.phone,
+              value: item.number,
+              label: item.label.name));
         }
         for (var item in contact.emails) {
-          directContacts.add(PhDirectContact(PhDirectContactType.email, item.address, item.label.name));
+          directContacts.add(PhDirectContact(type: PhDirectContactType.email,
+              value: item.address,
+              label: item.label.name));
         }
 
         var image = (contact.thumbnailFetched && contact.thumbnail != null)
@@ -44,38 +51,48 @@ class AppContactService {
             : (contact.photoFetched && contact.photo != null)
             ? contact.photo! : null;
 
-        mergedList['id:$contactId'] = PhContact(
-          'id:$contactId',
-          contact.name.first,
-          contact.name.middle,
-          contact.name.last,
-          contact.displayName,
-          null,
-          directContacts,
-          image,
-          []
+        mergedList['id:$phoneContactId'] = PhContact(
+          phoneBookId: 'id:$phoneContactId',
+          firstName: contact.name.first,
+          middleName: contact.name.middle,
+          lastName: contact.name.last,
+          displayName: contact.displayName,
+          birthDate: null,
+          directContacts: directContacts,
+          photo: image,
+          tags: [],
+          notes: ''
         );
 
-        contacts.put('id:$contactId', mergedList['id:$contactId']);
+        await contactsBox.put('id:$phoneContactId', mergedList['id:$phoneContactId']);
 
-        logDebug('add contact to store');
+        logDebug('add contact to store: id:$phoneContactId');
+        logDebug(mergedList['id:$phoneContactId']);
+
+      } else {
+        logDebug('find contact in store id:$phoneContactId');
+      }
+
+      //contacts.close();
+    }
+
+    for (var idIndex in updatedMapIndex) {
+      if (!phoneIndex.contains(idIndex)) {
+        mergedList.remove('$idIndex');
+        await contactsBox.delete('$idIndex');
+        logDebug('remove not-finded-in-phone contact from store $idIndex');
       }
     }
 
-    for (var item in mapIndex) {
-      if (!phoneIndex.contains(item)) {
-        mergedList.remove('id:$item');
-        contacts.delete('id:$item');
-        logDebug('remove contact from store');
-      }
-    }
-
-    mapIndex.clear();
+    updatedMapIndex.clear();
     for (var item in mergedList.values) {
-      mapIndex.add(item.phoneBookId);
+      String phoneContactId = item.phoneBookId;
+      updatedMapIndex.add('id:$phoneContactId');
     }
-    contacts.put('index', mapIndex);
-    logDebug('update index');
+
+    await contactsBox.put('index', updatedMapIndex);
+    logDebug('updatedMapIndex stored');
+    logDebug(updatedMapIndex);
 
     return mergedList.values.toList();
 

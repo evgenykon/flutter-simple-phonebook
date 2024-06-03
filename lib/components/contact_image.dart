@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../entities/pb_contact.dart';
+import '../entities/ph_contact.dart';
 
 class ContactImage extends StatelessWidget {
 
