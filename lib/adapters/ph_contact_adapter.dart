@@ -9,11 +9,11 @@ class PhContactAdapter extends TypeAdapter<PhContact> {
 
   @override
   PhContact read(BinaryReader reader) {
-    String phoneBookId = reader.read() as String;
-    String? firstName = reader.read() as String?;
-    String? middleName = reader.read() as String?;
-    String? lastName = reader.read() as String?;
-    String displayName = reader.read() as String;
+    String phoneBookId = reader.readString();
+    String? firstName = reader.readString();
+    String? middleName = reader.readString();
+    String? lastName = reader.readString();
+    String displayName = reader.readString();
     DateTime? birthDate = reader.read() as DateTime?;
     var tmpContacts = reader.read() as List<dynamic>;
     List<PhDirectContact> directContacts = tmpContacts.cast<PhDirectContact>();
@@ -42,7 +42,7 @@ class PhContactAdapter extends TypeAdapter<PhContact> {
   @override
   void write(BinaryWriter writer, PhContact obj) {
     writer
-      ..write(obj.phoneBookId)
+      ..writeString(obj.phoneBookId)
       ..write(obj.firstName)
       ..write(obj.middleName)
       ..write(obj.lastName)
